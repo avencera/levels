@@ -9,6 +9,9 @@ edition = "2021"
 # audio
 cpal = "0.13"
 
+# util
+ringbuf = "0.2"
+
 
 # error handling
 color-eyre = "0.5"
