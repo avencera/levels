@@ -3,7 +3,7 @@ use cpal::{
     Device, InputCallbackInfo, SupportedStreamConfig,
 };
 use eyre::Result;
-use ringbuf::{Consumer, Producer, RingBuffer};
+use rtrb::{Consumer, CopyToUninit, Producer, RingBuffer};
 
 use crate::{INTERVAL, LATENCY};
 
@@ -42,8 +42,7 @@ impl F32Handler {
         let write_ahead =
             ((sample_rate as f32 / 1000.0) * (channels * LATENCY) as f32).ceil() as usize;
 
-        let ring = RingBuffer::new(read_at_a_time + write_ahead);
-        let (producer, consumer) = ring.split();
+        let (producer, consumer) = RingBuffer::new(read_at_a_time + write_ahead);
 
         Self {
             device,
@@ -55,16 +54,15 @@ impl F32Handler {
     }
 
     fn run(self) -> Result<()> {
-        let mut input = Vec::with_capacity(self.read_at_a_time);
-
         let mut consumer = self.consumer;
         let mut producer = self.producer;
 
         let stream = self.device.build_input_stream(
             &self.config.into(),
-            move |data, _: &InputCallbackInfo| {
-                if producer.push_slice(data) < data.len() {
-                    eprintln!("buffer too slow")
+            move |data: &[f32], _: &InputCallbackInfo| {
+                let items_left = push_partial_slice(&mut producer, data);
+                if items_left > 0 {
+                    eprintln!("Buffer hasn't been cleared, items left {}", items_left);
                 }
             },
             move |err| {
@@ -75,27 +73,86 @@ impl F32Handler {
         stream.play()?;
 
         std::thread::spawn(move || loop {
-            use std::cmp::Ordering::Equal;
+            let input = match consumer.read_chunk(self.read_at_a_time) {
+                Ok(read_chunk) => read_chunk.into_iter(),
+                Err(rtrb::chunks::ChunkError::TooFewSlots(available)) => consumer
+                    .read_chunk(available)
+                    .expect("will always have available")
+                    .into_iter(),
+            };
 
-            (consumer).pop_slice(&mut input);
+            let calc = MinMaxSum::new_from_iter(input);
+            let avg = calc.sum / calc.len as f32;
 
-            let avg: f32 = input.iter().sum::<f32>() / input.len() as f32;
-
-            let max = input
-                .iter()
-                .max_by(|a, b| a.partial_cmp(b).unwrap_or(Equal))
-                .unwrap();
-
-            let min = input
-                .iter()
-                .min_by(|a, b| a.partial_cmp(b).unwrap_or(Equal))
-                .unwrap();
-
-            println!("AMP MIN: {}, AMP MAX: {}", avg - min, max - avg);
+            println!("AMP MIN: {}, AMP MAX: {}", avg - calc.min, calc.max - avg);
 
             std::thread::sleep(std::time::Duration::from_millis(INTERVAL as u64));
         });
 
         Ok(())
+    }
+}
+
+fn push_partial_slice<T>(queue: &mut Producer<T>, slice: &[T]) -> usize
+where
+    T: Copy,
+{
+    use rtrb::chunks::ChunkError::TooFewSlots;
+
+    let mut chunk = match queue.write_chunk_uninit(slice.len()) {
+        Ok(chunk) => chunk,
+        // Remaining slots are returned, this will always succeed:
+        Err(TooFewSlots(n)) => queue.write_chunk_uninit(n).unwrap(),
+    };
+
+    let end = chunk.len();
+    let (first, second) = chunk.as_mut_slices();
+    let mid = first.len();
+    slice[..mid].copy_to_uninit(first);
+    slice[mid..end].copy_to_uninit(second);
+
+    // SAFETY: All slots have been initialized
+    unsafe {
+        chunk.commit_all();
+    }
+
+    end
+}
+
+struct MinMaxSum<T> {
+    min: T,
+    max: T,
+    sum: T,
+    len: usize,
+}
+
+impl<T> MinMaxSum<T>
+where
+    T: Copy
+        + Default
+        + PartialEq
+        + PartialOrd
+        + std::ops::Add<Output = T>
+        + std::ops::Div<Output = T>,
+{
+    fn new_from_iter(iter: impl Iterator<Item = T>) -> Self {
+        let mut min = T::default();
+        let mut max = T::default();
+        let mut sum = T::default();
+        let mut len: usize = 0;
+
+        for num in iter {
+            if num < min {
+                min = num;
+            }
+            if num > max {
+                max = num;
+            }
+
+            sum = sum + num;
+            len += 1
+        }
+
+        Self { min, max, sum, len }
     }
 }

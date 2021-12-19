@@ -1,9 +1,6 @@
 mod handlers;
 
-use cpal::{
-    traits::{DeviceTrait, HostTrait},
-    Host, SupportedStreamConfig,
-};
+use cpal::traits::{DeviceTrait, HostTrait};
 use eyre::Result;
 
 const INTERVAL: u16 = 100;
@@ -25,7 +22,7 @@ impl App {
             .expect("Failed to get default input config");
 
         let handler = match config.sample_format() {
-            cpal::SampleFormat::F32 => handlers::Handler::new_f32(device, config.clone()),
+            cpal::SampleFormat::F32 => handlers::Handler::new_f32(device, config),
             cpal::SampleFormat::I16 => unimplemented!(),
             cpal::SampleFormat::U16 => unimplemented!(),
         };
