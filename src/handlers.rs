@@ -171,15 +171,7 @@ impl InnerHandler {
     ) -> Result<Stream>
     where
         Amp<T>: Decibel,
-        T: Copy
-            + Default
-            + cpal::Sample
-            + PartialEq
-            + PartialOrd
-            + Send
-            + 'static
-            + std::ops::Add<Output = T>
-            + std::ops::Div<Output = T>,
+        T: Copy + Default + cpal::Sample + PartialOrd + Send + 'static,
     {
         let stream = self.device.build_input_stream(
             &self.config.into(),

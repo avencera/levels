@@ -6,7 +6,7 @@ pub struct Amp<T> {
 
 impl<T> Amp<T>
 where
-    T: Copy + Default + PartialEq + PartialOrd + std::ops::Add<Output = T>,
+    T: Copy + Default + PartialOrd,
 {
     pub fn new_from_iter(iter: impl Iterator<Item = T>) -> Self {
         let mut min = T::default();
@@ -29,7 +29,9 @@ pub trait Decibel {
     type Amp;
 
     fn amp(&self) -> f32;
-    fn db(&self) -> f32;
+    fn db(&self) -> f32 {
+        self.amp().log10() * 20.0
+    }
 }
 
 impl Decibel for Amp<f32> {
@@ -37,10 +39,6 @@ impl Decibel for Amp<f32> {
 
     fn amp(&self) -> f32 {
         (self.max - self.min) / 2.0
-    }
-
-    fn db(&self) -> f32 {
-        self.amp().log10() * 20.0
     }
 }
 
@@ -50,20 +48,12 @@ impl Decibel for Amp<i16> {
     fn amp(&self) -> f32 {
         (self.max - self.min) as f32 / 2.0
     }
-
-    fn db(&self) -> f32 {
-        self.amp().log10() * 20.0
-    }
 }
 
 impl Decibel for Amp<u16> {
     type Amp = Amp<u16>;
 
     fn amp(&self) -> f32 {
-        ((self.max - self.min) as f32) / 2.0
-    }
-
-    fn db(&self) -> f32 {
-        self.amp().log10() * 20.0
+        (self.max - self.min) as f32 / 2.0
     }
 }
