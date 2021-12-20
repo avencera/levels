@@ -1,22 +1,40 @@
 mod handlers;
 
 use cpal::{
-    traits::{DeviceTrait, HostTrait},
-    Stream,
+    traits::{DeviceTrait, HostTrait, StreamTrait},
+    Host, Stream,
 };
 use eyre::Result;
+use handlers::Handler;
 
 const INTERVAL: u16 = 100;
 const LATENCY: u16 = INTERVAL / 2;
 
+enum State {
+    Init,
+    Stopped,
+    Ready(Handler),
+    Running(Stream),
+}
+
 struct App {
-    handler: handlers::Handler,
+    host: Host,
+    state: State,
 }
 
 impl App {
     fn new() -> Self {
         let host = cpal::default_host();
-        let device = host
+
+        Self {
+            host,
+            state: State::Init,
+        }
+    }
+
+    fn init_handler(&mut self) {
+        let device = self
+            .host
             .default_input_device()
             .expect("no input device available");
 
@@ -30,11 +48,30 @@ impl App {
             cpal::SampleFormat::U16 => unimplemented!(),
         };
 
-        Self { handler }
+        self.state = State::Ready(handler);
     }
 
-    fn run(self) -> Result<Stream> {
-        self.handler.run()
+    fn stop(mut self) {
+        if let State::Running(stream) = self.state {
+            let _ = stream.pause();
+        }
+
+        self.state = State::Stopped;
+    }
+
+    fn run(mut self) -> Result<Self> {
+        match self.state {
+            State::Init | State::Stopped => {
+                self.init_handler();
+                Ok(self.run()?)
+            }
+            State::Ready(handler) => {
+                let stream = handler.run()?;
+                self.state = State::Running(stream);
+                Ok(self)
+            }
+            State::Running(_) => Ok(self),
+        }
     }
 }
 
@@ -42,8 +79,7 @@ fn main() -> Result<()> {
     color_eyre::install()?;
     env_logger::init();
 
-    let app = App::new();
-    let stream = app.run()?;
+    let app = App::new().run()?;
 
     loop {
         std::thread::sleep(std::time::Duration::from_secs(100));
