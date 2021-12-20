@@ -43,7 +43,7 @@ fn main() -> Result<()> {
     env_logger::init();
 
     let app = App::new();
-    let _stream = app.run()?;
+    let stream = app.run()?;
 
     loop {
         std::thread::sleep(std::time::Duration::from_secs(100));

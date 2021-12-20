@@ -86,6 +86,10 @@ impl F32Handler {
         stream.play()?;
 
         std::thread::spawn(move || loop {
+            if consumer.is_abandoned() {
+                break;
+            }
+
             let input = match consumer.read_chunk(self.read_at_a_time) {
                 Ok(read_chunk) => read_chunk.into_iter(),
                 Err(rtrb::chunks::ChunkError::TooFewSlots(available)) => consumer
