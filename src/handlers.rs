@@ -6,10 +6,14 @@ use crossbeam_channel::{Receiver, Sender};
 use eyre::Result;
 use rtrb::{Consumer, CopyToUninit, Producer, RingBuffer};
 
-use crate::{INTERVAL, LATENCY};
+use crate::{
+    amp::{Amp, Decibel},
+    INTERVAL, LATENCY,
+};
 
 pub enum Handler {
     F32(F32Handler),
+    I16(I16Handler),
 }
 
 impl Handler {
@@ -17,31 +21,80 @@ impl Handler {
         Handler::F32(F32Handler::new(device, config))
     }
 
+    pub fn new_i16(device: Device, config: SupportedStreamConfig) -> Self {
+        Handler::I16(I16Handler::new(device, config))
+    }
+
     pub fn run(self) -> Result<Stream> {
-        let (sender, receiver): (Sender<Amp<f32>>, Receiver<Amp<f32>>) =
-            crossbeam_channel::bounded(200);
+        let (sender, receiver): (Sender<f32>, Receiver<f32>) = crossbeam_channel::bounded(200);
 
         std::thread::spawn(move || {
-            for amp in receiver {
-                println!("{}", amp.db());
+            for decibel in receiver {
+                println!("{}", decibel);
             }
         });
 
         match self {
             Handler::F32(handler) => Ok(handler.run(sender)?),
+            Handler::I16(handler) => Ok(handler.run(sender)?),
         }
     }
 }
 
 pub struct F32Handler {
-    device: Device,
-    config: SupportedStreamConfig,
-    read_at_a_time: usize,
+    inner: InnerHandler,
     producer: Producer<f32>,
     consumer: Consumer<f32>,
 }
 
 impl F32Handler {
+    fn new(device: Device, config: SupportedStreamConfig) -> Self {
+        let inner = InnerHandler::new(device, config);
+        let (producer, consumer) = RingBuffer::new(inner.buffer_size);
+
+        Self {
+            inner,
+            producer,
+            consumer,
+        }
+    }
+
+    fn run(self, sender: Sender<f32>) -> Result<Stream> {
+        self.inner.run(self.consumer, self.producer, sender)
+    }
+}
+
+pub struct I16Handler {
+    inner: InnerHandler,
+    producer: Producer<i16>,
+    consumer: Consumer<i16>,
+}
+
+impl I16Handler {
+    fn new(device: Device, config: SupportedStreamConfig) -> Self {
+        let inner = InnerHandler::new(device, config);
+        let (producer, consumer) = RingBuffer::new(inner.buffer_size);
+
+        Self {
+            inner,
+            producer,
+            consumer,
+        }
+    }
+
+    fn run(self, sender: Sender<f32>) -> Result<Stream> {
+        self.inner.run(self.consumer, self.producer, sender)
+    }
+}
+
+pub struct InnerHandler {
+    device: Device,
+    config: SupportedStreamConfig,
+    read_at_a_time: usize,
+    buffer_size: usize,
+}
+
+impl InnerHandler {
     fn new(device: Device, config: SupportedStreamConfig) -> Self {
         let sample_rate = config.sample_rate().0;
         let channels = config.channels();
@@ -53,26 +106,36 @@ impl F32Handler {
             ((sample_rate as f32 / 1000.0) * (channels * LATENCY) as f32).ceil() as usize;
 
         let buffer_size = read_at_a_time + write_ahead;
-        println!("BUFFER SIZE: {}", buffer_size);
-
-        let (producer, consumer) = RingBuffer::new(buffer_size);
 
         Self {
             device,
             config,
             read_at_a_time,
-            producer,
-            consumer,
+            buffer_size,
         }
     }
 
-    fn run(self, sender: Sender<Amp<f32>>) -> Result<Stream> {
-        let mut consumer = self.consumer;
-        let mut producer = self.producer;
-
+    fn run<T>(
+        self,
+        mut consumer: Consumer<T>,
+        mut producer: Producer<T>,
+        sender: Sender<f32>,
+    ) -> Result<Stream>
+    where
+        Amp<T>: Decibel,
+        T: Copy
+            + Default
+            + cpal::Sample
+            + PartialEq
+            + PartialOrd
+            + Send
+            + 'static
+            + std::ops::Add<Output = T>
+            + std::ops::Div<Output = T>,
+    {
         let stream = self.device.build_input_stream(
             &self.config.into(),
-            move |data: &[f32], _: &InputCallbackInfo| {
+            move |data: &[_], _: &InputCallbackInfo| {
                 let items_left = push_partial_slice(&mut producer, data);
                 if items_left != 0 {
                     log::warn!("buffer hasn't been cleared, items left {}", items_left);
@@ -99,7 +162,8 @@ impl F32Handler {
             };
 
             let amp = Amp::new_from_iter(input);
-            sender.send(amp).expect("sender will always be ready");
+
+            sender.send(amp.db()).expect("sender will always be ready");
 
             std::thread::sleep(std::time::Duration::from_millis(INTERVAL as u64));
         });
@@ -134,47 +198,4 @@ where
     }
 
     slice_len - end
-}
-
-#[derive(Debug)]
-struct Amp<T> {
-    min: T,
-    max: T,
-}
-
-impl<T> Amp<T>
-where
-    T: Copy
-        + Default
-        + PartialEq
-        + PartialOrd
-        + core::fmt::Display
-        + std::ops::Add<Output = T>
-        + std::ops::Div<Output = T>,
-{
-    fn new_from_iter(iter: impl Iterator<Item = T>) -> Self {
-        let mut min = T::default();
-        let mut max = T::default();
-
-        for num in iter {
-            if num < min {
-                min = num;
-            }
-            if num > max {
-                max = num;
-            }
-        }
-
-        Self { min, max }
-    }
-}
-
-impl Amp<f32> {
-    pub fn amp(&self) -> f32 {
-        (self.max - self.min) / 2.0
-    }
-
-    pub fn db(&self) -> f32 {
-        self.amp().log10() * 20.0
-    }
 }
