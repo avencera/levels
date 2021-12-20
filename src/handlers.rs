@@ -19,11 +19,11 @@ impl Handler {
 
     pub fn run(self) -> Result<Stream> {
         let (sender, receiver): (Sender<Amp<f32>>, Receiver<Amp<f32>>) =
-            crossbeam_channel::bounded(100);
+            crossbeam_channel::bounded(200);
 
         std::thread::spawn(move || {
             for amp in receiver {
-                println!("AVG {}", amp.avg());
+                println!("{}", amp.db());
             }
         });
 
@@ -140,8 +140,6 @@ where
 struct Amp<T> {
     min: T,
     max: T,
-    sum: T,
-    len: usize,
 }
 
 impl<T> Amp<T>
@@ -150,15 +148,13 @@ where
         + Default
         + PartialEq
         + PartialOrd
-        + core::fmt::Debug
+        + core::fmt::Display
         + std::ops::Add<Output = T>
         + std::ops::Div<Output = T>,
 {
     fn new_from_iter(iter: impl Iterator<Item = T>) -> Self {
         let mut min = T::default();
         let mut max = T::default();
-        let mut sum = T::default();
-        let mut len: usize = 0;
 
         for num in iter {
             if num < min {
@@ -167,17 +163,18 @@ where
             if num > max {
                 max = num;
             }
-
-            sum = sum + num;
-            len += 1
         }
 
-        Self { min, max, sum, len }
+        Self { min, max }
     }
 }
 
 impl Amp<f32> {
-    pub fn avg(self) -> f32 {
-        self.sum / self.len as f32
+    pub fn amp(&self) -> f32 {
+        (self.max - self.min) / 2.0
+    }
+
+    pub fn db(&self) -> f32 {
+        self.amp().log10() * 20.0
     }
 }
