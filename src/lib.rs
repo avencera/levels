@@ -1,5 +1,5 @@
 mod amp;
-mod handlers;
+mod handler;
 mod util;
 
 use cpal::{
@@ -7,7 +7,7 @@ use cpal::{
     Host, Stream,
 };
 use eyre::Result;
-use handlers::Handler;
+use handler::Handler;
 
 const INTERVAL: u16 = 100;
 const LATENCY: u16 = INTERVAL / 2;

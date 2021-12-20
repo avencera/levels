@@ -11,30 +11,6 @@ use crate::{
     util, INTERVAL, LATENCY,
 };
 
-pub enum Handler {
-    F32(InnerHandler<f32>),
-    I16(InnerHandler<i16>),
-    U16(InnerHandler<u16>),
-}
-
-impl Handler {
-    pub fn new(device: Device, config: SupportedStreamConfig) -> Self {
-        match config.sample_format() {
-            cpal::SampleFormat::F32 => Handler::F32(InnerHandler::new(device, config)),
-            cpal::SampleFormat::I16 => Handler::I16(InnerHandler::new(device, config)),
-            cpal::SampleFormat::U16 => Handler::U16(InnerHandler::new(device, config)),
-        }
-    }
-
-    pub fn run(self) -> Result<Stream> {
-        match self {
-            Handler::F32(handler) => Ok(handler.run()?),
-            Handler::I16(handler) => Ok(handler.run()?),
-            Handler::U16(handler) => Ok(handler.run()?),
-        }
-    }
-}
-
 pub struct InnerHandler<T> {
     device: Device,
     config: SupportedStreamConfig,
@@ -48,7 +24,7 @@ where
     Amp<T>: Decibel,
     T: Copy + Default + cpal::Sample + PartialOrd + Send + 'static,
 {
-    fn new(device: Device, config: SupportedStreamConfig) -> Self {
+    pub fn new(device: Device, config: SupportedStreamConfig) -> Self {
         let sample_rate = config.sample_rate().0;
         let channels = config.channels();
 
@@ -71,7 +47,7 @@ where
         }
     }
 
-    fn run(self) -> Result<Stream> {
+    pub fn run(self) -> Result<Stream> {
         let (sender, receiver): (Sender<Amp<T>>, Receiver<Amp<T>>) =
             crossbeam_channel::bounded(200);
 
