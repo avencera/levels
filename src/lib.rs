@@ -75,7 +75,7 @@ impl App {
         let handler = match config.sample_format() {
             cpal::SampleFormat::F32 => handlers::Handler::new_f32(device, config),
             cpal::SampleFormat::I16 => handlers::Handler::new_i16(device, config),
-            cpal::SampleFormat::U16 => unimplemented!(),
+            cpal::SampleFormat::U16 => handlers::Handler::new_u16(device, config),
         };
 
         self.state = State::Ready(handler);

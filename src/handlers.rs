@@ -14,6 +14,7 @@ use crate::{
 pub enum Handler {
     F32(F32Handler),
     I16(I16Handler),
+    U16(U16Handler),
 }
 
 impl Handler {
@@ -25,18 +26,15 @@ impl Handler {
         Handler::I16(I16Handler::new(device, config))
     }
 
+    pub fn new_u16(device: Device, config: SupportedStreamConfig) -> Self {
+        Handler::U16(U16Handler::new(device, config))
+    }
+
     pub fn run(self) -> Result<Stream> {
-        let (sender, receiver): (Sender<f32>, Receiver<f32>) = crossbeam_channel::bounded(200);
-
-        std::thread::spawn(move || {
-            for decibel in receiver {
-                println!("{}", decibel);
-            }
-        });
-
         match self {
-            Handler::F32(handler) => Ok(handler.run(sender)?),
-            Handler::I16(handler) => Ok(handler.run(sender)?),
+            Handler::F32(handler) => Ok(handler.run()?),
+            Handler::I16(handler) => Ok(handler.run()?),
+            Handler::U16(handler) => Ok(handler.run()?),
         }
     }
 }
@@ -59,7 +57,16 @@ impl F32Handler {
         }
     }
 
-    fn run(self, sender: Sender<f32>) -> Result<Stream> {
+    fn run(self) -> Result<Stream> {
+        let (sender, receiver): (Sender<Amp<f32>>, Receiver<Amp<f32>>) =
+            crossbeam_channel::bounded(200);
+
+        std::thread::spawn(move || {
+            for amp in receiver {
+                println!("{}", amp.db());
+            }
+        });
+
         self.inner.run(self.consumer, self.producer, sender)
     }
 }
@@ -82,7 +89,48 @@ impl I16Handler {
         }
     }
 
-    fn run(self, sender: Sender<f32>) -> Result<Stream> {
+    fn run(self) -> Result<Stream> {
+        let (sender, receiver): (Sender<Amp<i16>>, Receiver<Amp<i16>>) =
+            crossbeam_channel::bounded(200);
+
+        std::thread::spawn(move || {
+            for amp in receiver {
+                println!("{}", amp.db());
+            }
+        });
+
+        self.inner.run(self.consumer, self.producer, sender)
+    }
+}
+
+pub struct U16Handler {
+    inner: InnerHandler,
+    producer: Producer<u16>,
+    consumer: Consumer<u16>,
+}
+
+impl U16Handler {
+    fn new(device: Device, config: SupportedStreamConfig) -> Self {
+        let inner = InnerHandler::new(device, config);
+        let (producer, consumer) = RingBuffer::new(inner.buffer_size);
+
+        Self {
+            inner,
+            producer,
+            consumer,
+        }
+    }
+
+    fn run(self) -> Result<Stream> {
+        let (sender, receiver): (Sender<Amp<u16>>, Receiver<Amp<u16>>) =
+            crossbeam_channel::bounded(200);
+
+        std::thread::spawn(move || {
+            for amp in receiver {
+                println!("{}", amp.db());
+            }
+        });
+
         self.inner.run(self.consumer, self.producer, sender)
     }
 }
@@ -119,7 +167,7 @@ impl InnerHandler {
         self,
         mut consumer: Consumer<T>,
         mut producer: Producer<T>,
-        sender: Sender<f32>,
+        sender: Sender<Amp<T>>,
     ) -> Result<Stream>
     where
         Amp<T>: Decibel,
@@ -163,7 +211,7 @@ impl InnerHandler {
 
             let amp = Amp::new_from_iter(input);
 
-            sender.send(amp.db()).expect("sender will always be ready");
+            sender.send(amp).expect("sender will always be ready");
 
             std::thread::sleep(std::time::Duration::from_millis(INTERVAL as u64));
         });
