@@ -18,16 +18,12 @@ pub enum Handler {
 }
 
 impl Handler {
-    pub fn new_f32(device: Device, config: SupportedStreamConfig) -> Self {
-        Handler::F32(InnerHandler::new(device, config))
-    }
-
-    pub fn new_i16(device: Device, config: SupportedStreamConfig) -> Self {
-        Handler::I16(InnerHandler::new(device, config))
-    }
-
-    pub fn new_u16(device: Device, config: SupportedStreamConfig) -> Self {
-        Handler::U16(InnerHandler::new(device, config))
+    pub fn new(device: Device, config: SupportedStreamConfig) -> Self {
+        match config.sample_format() {
+            cpal::SampleFormat::F32 => Handler::F32(InnerHandler::new(device, config)),
+            cpal::SampleFormat::I16 => Handler::I16(InnerHandler::new(device, config)),
+            cpal::SampleFormat::U16 => Handler::U16(InnerHandler::new(device, config)),
+        }
     }
 
     pub fn run(self) -> Result<Stream> {
