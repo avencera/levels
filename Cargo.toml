@@ -9,8 +9,15 @@ version = "0.1.0"
 # audio
 cpal = "0.13"
 
-# util
+# ring buffer
 rtrb = "0.2"
+
+# channels  
+crossbeam-channel = "0.5"
+
+# logging
+env_logger = "0.9"
+log = "0.4"
 
 # error handling
 color-eyre = "0.5"

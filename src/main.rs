@@ -6,7 +6,7 @@ use cpal::{
 };
 use eyre::Result;
 
-const INTERVAL: u16 = 300;
+const INTERVAL: u16 = 100;
 const LATENCY: u16 = INTERVAL / 2;
 
 struct App {
@@ -40,6 +40,7 @@ impl App {
 
 fn main() -> Result<()> {
     color_eyre::install()?;
+    env_logger::init();
 
     let app = App::new();
     let _stream = app.run()?;

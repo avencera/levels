@@ -2,6 +2,7 @@ use cpal::{
     traits::{DeviceTrait, StreamTrait},
     Device, InputCallbackInfo, Stream, SupportedStreamConfig,
 };
+use crossbeam_channel::{Receiver, Sender};
 use eyre::Result;
 use rtrb::{Consumer, CopyToUninit, Producer, RingBuffer};
 
@@ -17,8 +18,17 @@ impl Handler {
     }
 
     pub fn run(self) -> Result<Stream> {
+        let (sender, receiver): (Sender<Amp<f32>>, Receiver<Amp<f32>>) =
+            crossbeam_channel::bounded(100);
+
+        std::thread::spawn(move || {
+            for amp in receiver {
+                println!("AVG {}", amp.avg());
+            }
+        });
+
         match self {
-            Handler::F32(handler) => Ok(handler.run()?),
+            Handler::F32(handler) => Ok(handler.run(sender)?),
         }
     }
 }
@@ -56,7 +66,7 @@ impl F32Handler {
         }
     }
 
-    fn run(self) -> Result<Stream> {
+    fn run(self, sender: Sender<Amp<f32>>) -> Result<Stream> {
         let mut consumer = self.consumer;
         let mut producer = self.producer;
 
@@ -65,11 +75,11 @@ impl F32Handler {
             move |data: &[f32], _: &InputCallbackInfo| {
                 let items_left = push_partial_slice(&mut producer, data);
                 if items_left != 0 {
-                    eprintln!("buffer hasn't been cleared, items left {}", items_left);
+                    log::warn!("buffer hasn't been cleared, items left {}", items_left);
                 }
             },
             move |err| {
-                eprintln!("an error occurred on stream: {}", err);
+                log::error!("an error occurred on stream: {}", err);
             },
         )?;
 
@@ -84,9 +94,8 @@ impl F32Handler {
                     .into_iter(),
             };
 
-            let calc = MinMaxSum::new_from_iter(input);
-            let avg = calc.sum / calc.len as f32;
-            println!("AMP MIN: {}, AMP MAX: {}", avg - calc.min, calc.max - avg);
+            let amp = Amp::new_from_iter(input);
+            sender.send(amp).expect("sender will always be ready");
 
             std::thread::sleep(std::time::Duration::from_millis(INTERVAL as u64));
         });
@@ -124,14 +133,14 @@ where
 }
 
 #[derive(Debug)]
-struct MinMaxSum<T> {
+struct Amp<T> {
     min: T,
     max: T,
     sum: T,
     len: usize,
 }
 
-impl<T> MinMaxSum<T>
+impl<T> Amp<T>
 where
     T: Copy
         + Default
@@ -160,5 +169,11 @@ where
         }
 
         Self { min, max, sum, len }
+    }
+}
+
+impl Amp<f32> {
+    pub fn avg(self) -> f32 {
+        self.sum / self.len as f32
     }
 }
