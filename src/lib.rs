@@ -1,5 +1,6 @@
 mod amp;
 mod handlers;
+mod util;
 
 use cpal::{
     traits::{DeviceTrait, HostTrait, StreamTrait},
