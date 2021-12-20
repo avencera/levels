@@ -1,9 +1,12 @@
 mod handlers;
 
-use cpal::traits::{DeviceTrait, HostTrait};
+use cpal::{
+    traits::{DeviceTrait, HostTrait},
+    Stream,
+};
 use eyre::Result;
 
-const INTERVAL: u16 = 100;
+const INTERVAL: u16 = 300;
 const LATENCY: u16 = INTERVAL / 2;
 
 struct App {
@@ -30,7 +33,7 @@ impl App {
         Self { handler }
     }
 
-    fn run(self) -> Result<()> {
+    fn run(self) -> Result<Stream> {
         self.handler.run()
     }
 }
@@ -39,7 +42,9 @@ fn main() -> Result<()> {
     color_eyre::install()?;
 
     let app = App::new();
-    app.run()?;
+    let _stream = app.run()?;
 
-    Ok(())
+    loop {
+        std::thread::sleep(std::time::Duration::from_secs(100));
+    }
 }

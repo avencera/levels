@@ -1,6 +1,6 @@
 use cpal::{
     traits::{DeviceTrait, StreamTrait},
-    Device, InputCallbackInfo, SupportedStreamConfig,
+    Device, InputCallbackInfo, Stream, SupportedStreamConfig,
 };
 use eyre::Result;
 use rtrb::{Consumer, CopyToUninit, Producer, RingBuffer};
@@ -16,9 +16,9 @@ impl Handler {
         Handler::F32(F32Handler::new(device, config))
     }
 
-    pub fn run(self) -> Result<()> {
+    pub fn run(self) -> Result<Stream> {
         match self {
-            Handler::F32(handler) => handler.run(),
+            Handler::F32(handler) => Ok(handler.run()?),
         }
     }
 }
@@ -42,7 +42,10 @@ impl F32Handler {
         let write_ahead =
             ((sample_rate as f32 / 1000.0) * (channels * LATENCY) as f32).ceil() as usize;
 
-        let (producer, consumer) = RingBuffer::new(read_at_a_time + write_ahead);
+        let buffer_size = read_at_a_time + write_ahead;
+        println!("BUFFER SIZE: {}", buffer_size);
+
+        let (producer, consumer) = RingBuffer::new(buffer_size);
 
         Self {
             device,
@@ -53,7 +56,7 @@ impl F32Handler {
         }
     }
 
-    fn run(self) -> Result<()> {
+    fn run(self) -> Result<Stream> {
         let mut consumer = self.consumer;
         let mut producer = self.producer;
 
@@ -61,8 +64,8 @@ impl F32Handler {
             &self.config.into(),
             move |data: &[f32], _: &InputCallbackInfo| {
                 let items_left = push_partial_slice(&mut producer, data);
-                if items_left > 0 {
-                    eprintln!("Buffer hasn't been cleared, items left {}", items_left);
+                if items_left != 0 {
+                    eprintln!("buffer hasn't been cleared, items left {}", items_left);
                 }
             },
             move |err| {
@@ -83,13 +86,12 @@ impl F32Handler {
 
             let calc = MinMaxSum::new_from_iter(input);
             let avg = calc.sum / calc.len as f32;
-
             println!("AMP MIN: {}, AMP MAX: {}", avg - calc.min, calc.max - avg);
 
             std::thread::sleep(std::time::Duration::from_millis(INTERVAL as u64));
         });
 
-        Ok(())
+        Ok(stream)
     }
 }
 
@@ -99,7 +101,9 @@ where
 {
     use rtrb::chunks::ChunkError::TooFewSlots;
 
-    let mut chunk = match queue.write_chunk_uninit(slice.len()) {
+    let slice_len = slice.len();
+
+    let mut chunk = match queue.write_chunk_uninit(slice_len) {
         Ok(chunk) => chunk,
         // Remaining slots are returned, this will always succeed:
         Err(TooFewSlots(n)) => queue.write_chunk_uninit(n).unwrap(),
@@ -116,9 +120,10 @@ where
         chunk.commit_all();
     }
 
-    end
+    slice_len - end
 }
 
+#[derive(Debug)]
 struct MinMaxSum<T> {
     min: T,
     max: T,
@@ -132,6 +137,7 @@ where
         + Default
         + PartialEq
         + PartialOrd
+        + core::fmt::Debug
         + std::ops::Add<Output = T>
         + std::ops::Div<Output = T>,
 {
