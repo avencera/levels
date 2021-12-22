@@ -10,7 +10,7 @@ use eyre::Result;
 use handler::Handler;
 
 const INTERVAL: u16 = 100;
-const LATENCY: u16 = INTERVAL / 2;
+const LATENCY: u16 = 50;
 
 enum State {
     Init,
