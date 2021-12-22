@@ -21,7 +21,7 @@ class StatusBarController {
         statusItem = statusBar.statusItem(withLength: 28.0)
         
         if let statusBarButton = statusItem.button {
-            statusBarButton.title = "hello"
+            statusBarButton.title = ""
             statusBarButton.action = #selector(togglePopover(sender:))
             statusBarButton.target = self
         }
@@ -36,6 +36,10 @@ class StatusBarController {
         else {
             showPopover(sender)
         }
+    }
+    
+    public func changeText(text: String) {
+        statusItem.button?.title = text
     }
     
     func showPopover(_ sender: AnyObject) {
