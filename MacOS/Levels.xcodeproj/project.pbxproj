@@ -15,7 +15,9 @@
 		A70B624C237B003900A2BA73 /* StatusBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A70B624B237B003900A2BA73 /* StatusBarController.swift */; };
 		A70B6250237B022700A2BA73 /* MainViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A70B624F237B022700A2BA73 /* MainViewController.swift */; };
 		A70B6252237B078200A2BA73 /* EventMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = A70B6251237B078200A2BA73 /* EventMonitor.swift */; };
-		AC2E4559277433BE00B1E878 /* decibel.udl in Resources */ = {isa = PBXBuildFile; fileRef = AC2E4558277433BE00B1E878 /* decibel.udl */; };
+		AC5DBBCC2774E41200FAA2F1 /* xc-universal-binary.sh in Resources */ = {isa = PBXBuildFile; fileRef = AC5DBBCB2774E41200FAA2F1 /* xc-universal-binary.sh */; };
+		AC5DBBD32774EB8C00FAA2F1 /* decibel.udl in Sources */ = {isa = PBXBuildFile; fileRef = AC5DBBD22774EB8C00FAA2F1 /* decibel.udl */; };
+		AC5DBBD92774ED6C00FAA2F1 /* liblevels.a in Frameworks */ = {isa = PBXBuildFile; fileRef = AC5DBBD82774ED6C00FAA2F1 /* liblevels.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXBuildRule section */
@@ -29,11 +31,11 @@
 			);
 			isEditable = 1;
 			outputFiles = (
-				"$(INPUT_FILE_DIR)/Generated/$(INPUT_FILE_BASE).swift",
-				"$(INPUT_FILE_DIR)/Generated/$(INPUT_FILE_BASE)FFI.h",
+				"$(INPUT_FILE_DIR)/generated/$(INPUT_FILE_BASE).swift",
+				"$(INPUT_FILE_DIR)/generated/$(INPUT_FILE_BASE)FFI.h",
 			);
 			runOncePerArchitecture = 0;
-			script = "# Type a script or drag a script file from your workspace to insert its path.\n#INPUT_FILE_PATH=/Users/praveen/code/levels/MacOS/decibel.udl\n#DERIVED_FILE_DIR=/Users/praveen/code/levels/MacOS/derivedx`x``x\n\n$HOME/.cargo/bin/uniffi-bindgen generate \"$INPUT_FILE_PATH\" --language swift --out-dir $INPUT_FILE_DIR/Generated\n";
+			script = "# Type a script or drag a script file from your workspace to insert its path.\n$HOME/.cargo/bin/uniffi-bindgen generate \"$INPUT_FILE_PATH\" --language swift --out-dir $INPUT_FILE_DIR/generated\n";
 		};
 /* End PBXBuildRule section */
 
@@ -49,8 +51,12 @@
 		A70B624B237B003900A2BA73 /* StatusBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusBarController.swift; sourceTree = "<group>"; };
 		A70B624F237B022700A2BA73 /* MainViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainViewController.swift; sourceTree = "<group>"; };
 		A70B6251237B078200A2BA73 /* EventMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventMonitor.swift; sourceTree = "<group>"; };
-		AC2E4558277433BE00B1E878 /* decibel.udl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = decibel.udl; path = /Users/praveen/code/levels/rust/src/decibel.udl; sourceTree = "<absolute>"; };
 		AC2E455B2774375400B1E878 /* Levels-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Levels-Bridging-Header.h"; sourceTree = "<group>"; };
+		AC5DBBCB2774E41200FAA2F1 /* xc-universal-binary.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "xc-universal-binary.sh"; sourceTree = "<group>"; };
+		AC5DBBD22774EB8C00FAA2F1 /* decibel.udl */ = {isa = PBXFileReference; lastKnownFileType = text; name = decibel.udl; path = ../rust/src/decibel.udl; sourceTree = "<group>"; };
+		AC5DBBD52774ECF900FAA2F1 /* decibelFFI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = decibelFFI.h; path = ../rust/src/generated/decibelFFI.h; sourceTree = "<group>"; };
+		AC5DBBD82774ED6C00FAA2F1 /* liblevels.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = liblevels.a; path = ../universal/debug/liblevels.a; sourceTree = "<group>"; };
+		AC5DBBDA2774EDDA00FAA2F1 /* decibelFFI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = decibelFFI.h; path = ../rust/src/generated/decibelFFI.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -58,6 +64,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AC5DBBD92774ED6C00FAA2F1 /* liblevels.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -67,10 +74,14 @@
 		A70B6227237AF87000A2BA73 = {
 			isa = PBXGroup;
 			children = (
+				AC5DBBD52774ECF900FAA2F1 /* decibelFFI.h */,
+				AC5DBBDA2774EDDA00FAA2F1 /* decibelFFI.h */,
+				AC5DBBD22774EB8C00FAA2F1 /* decibel.udl */,
+				AC5DBBCB2774E41200FAA2F1 /* xc-universal-binary.sh */,
 				A70B6232237AF87000A2BA73 /* Levels */,
 				A70B6231237AF87000A2BA73 /* Products */,
 				AC2E455B2774375400B1E878 /* Levels-Bridging-Header.h */,
-				AC2E4558277433BE00B1E878 /* decibel.udl */,
+				AC5DBBD72774ED6C00FAA2F1 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -123,16 +134,36 @@
 			path = Views;
 			sourceTree = "<group>";
 		};
+		AC5DBBD72774ED6C00FAA2F1 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				AC5DBBD82774ED6C00FAA2F1 /* liblevels.a */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		AC5DBBD42774ECCE00FAA2F1 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
 		A70B622F237AF87000A2BA73 /* Levels */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = A70B6243237AF87700A2BA73 /* Build configuration list for PBXNativeTarget "Levels" */;
 			buildPhases = (
+				AC5DBBD42774ECCE00FAA2F1 /* Headers */,
 				A70B622C237AF87000A2BA73 /* Sources */,
 				A70B622D237AF87000A2BA73 /* Frameworks */,
 				A70B622E237AF87000A2BA73 /* Resources */,
+				AC5DBBCD2774E51F00FAA2F1 /* ShellScript */,
 			);
 			buildRules = (
 				AC2E455A2774342400B1E878 /* PBXBuildRule */,
@@ -185,18 +216,39 @@
 			files = (
 				A70B623E237AF87700A2BA73 /* Main.storyboard in Resources */,
 				A70B623B237AF87700A2BA73 /* Preview Assets.xcassets in Resources */,
-				AC2E4559277433BE00B1E878 /* decibel.udl in Resources */,
+				AC5DBBCC2774E41200FAA2F1 /* xc-universal-binary.sh in Resources */,
 				A70B6238237AF87700A2BA73 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		AC5DBBCD2774E51F00FAA2F1 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "bash $SRCROOT/xc-universal-binary.sh liblevels.a levels $SRCROOT/../rust $CONFIGURATION\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		A70B622C237AF87000A2BA73 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AC5DBBD32774EB8C00FAA2F1 /* decibel.udl in Sources */,
 				A70B6236237AF87000A2BA73 /* ContentView.swift in Sources */,
 				A70B6252237B078200A2BA73 /* EventMonitor.swift in Sources */,
 				A70B624C237B003900A2BA73 /* StatusBarController.swift in Sources */,
@@ -352,7 +404,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				LIBRARY_SEARCH_PATHS = "";
+				LIBRARY_SEARCH_PATHS = "$(SRCROOT)/../rust/target/universal/debug";
 				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				PRODUCT_BUNDLE_IDENTIFIER = com.anaghsharma.levels;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -382,7 +434,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				LIBRARY_SEARCH_PATHS = "";
+				LIBRARY_SEARCH_PATHS = "$(SRCROOT)/../rust/target/universal/debug";
 				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				PRODUCT_BUNDLE_IDENTIFIER = com.anaghsharma.levels;
 				PRODUCT_NAME = "$(TARGET_NAME)";
