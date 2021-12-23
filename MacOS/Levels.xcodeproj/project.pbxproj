@@ -17,7 +17,10 @@
 		A70B6252237B078200A2BA73 /* EventMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = A70B6251237B078200A2BA73 /* EventMonitor.swift */; };
 		AC5DBBCC2774E41200FAA2F1 /* xc-universal-binary.sh in Resources */ = {isa = PBXBuildFile; fileRef = AC5DBBCB2774E41200FAA2F1 /* xc-universal-binary.sh */; };
 		AC5DBBD32774EB8C00FAA2F1 /* decibel.udl in Sources */ = {isa = PBXBuildFile; fileRef = AC5DBBD22774EB8C00FAA2F1 /* decibel.udl */; };
-		AC5DBBD92774ED6C00FAA2F1 /* liblevels.a in Frameworks */ = {isa = PBXBuildFile; fileRef = AC5DBBD82774ED6C00FAA2F1 /* liblevels.a */; };
+		AC5DBBE52774F1C300FAA2F1 /* liblevels.a in Frameworks */ = {isa = PBXBuildFile; fileRef = AC5DBBE12774F07E00FAA2F1 /* liblevels.a */; };
+		AC5DBBE72774F23000FAA2F1 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AC5DBBE62774F23000FAA2F1 /* CoreAudio.framework */; };
+		AC5DBBE92774F23700FAA2F1 /* AudioUnit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AC5DBBE82774F23700FAA2F1 /* AudioUnit.framework */; };
+		AC5DBBEB2774F23D00FAA2F1 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AC5DBBEA2774F23D00FAA2F1 /* AudioToolbox.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXBuildRule section */
@@ -54,9 +57,13 @@
 		AC2E455B2774375400B1E878 /* Levels-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Levels-Bridging-Header.h"; sourceTree = "<group>"; };
 		AC5DBBCB2774E41200FAA2F1 /* xc-universal-binary.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "xc-universal-binary.sh"; sourceTree = "<group>"; };
 		AC5DBBD22774EB8C00FAA2F1 /* decibel.udl */ = {isa = PBXFileReference; lastKnownFileType = text; name = decibel.udl; path = ../rust/src/decibel.udl; sourceTree = "<group>"; };
-		AC5DBBD52774ECF900FAA2F1 /* decibelFFI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = decibelFFI.h; path = ../rust/src/generated/decibelFFI.h; sourceTree = "<group>"; };
 		AC5DBBD82774ED6C00FAA2F1 /* liblevels.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = liblevels.a; path = ../universal/debug/liblevels.a; sourceTree = "<group>"; };
-		AC5DBBDA2774EDDA00FAA2F1 /* decibelFFI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = decibelFFI.h; path = ../rust/src/generated/decibelFFI.h; sourceTree = "<group>"; };
+		AC5DBBDC2774EEB900FAA2F1 /* liblevels.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = liblevels.a; path = "../rust/target/aarch64-apple-darwin/debug/liblevels.a"; sourceTree = "<group>"; };
+		AC5DBBDF2774EFBD00FAA2F1 /* liblevels.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = liblevels.a; path = ../rust/target/debug/liblevels.a; sourceTree = "<group>"; };
+		AC5DBBE12774F07E00FAA2F1 /* liblevels.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = liblevels.a; path = ../rust/target/universal/debug/liblevels.a; sourceTree = "<group>"; };
+		AC5DBBE62774F23000FAA2F1 /* CoreAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudio.framework; path = System/Library/Frameworks/CoreAudio.framework; sourceTree = SDKROOT; };
+		AC5DBBE82774F23700FAA2F1 /* AudioUnit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioUnit.framework; path = System/Library/Frameworks/AudioUnit.framework; sourceTree = SDKROOT; };
+		AC5DBBEA2774F23D00FAA2F1 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -64,7 +71,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				AC5DBBD92774ED6C00FAA2F1 /* liblevels.a in Frameworks */,
+				AC5DBBEB2774F23D00FAA2F1 /* AudioToolbox.framework in Frameworks */,
+				AC5DBBE92774F23700FAA2F1 /* AudioUnit.framework in Frameworks */,
+				AC5DBBE72774F23000FAA2F1 /* CoreAudio.framework in Frameworks */,
+				AC5DBBE52774F1C300FAA2F1 /* liblevels.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -74,8 +84,6 @@
 		A70B6227237AF87000A2BA73 = {
 			isa = PBXGroup;
 			children = (
-				AC5DBBD52774ECF900FAA2F1 /* decibelFFI.h */,
-				AC5DBBDA2774EDDA00FAA2F1 /* decibelFFI.h */,
 				AC5DBBD22774EB8C00FAA2F1 /* decibel.udl */,
 				AC5DBBCB2774E41200FAA2F1 /* xc-universal-binary.sh */,
 				A70B6232237AF87000A2BA73 /* Levels */,
@@ -137,6 +145,12 @@
 		AC5DBBD72774ED6C00FAA2F1 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				AC5DBBEA2774F23D00FAA2F1 /* AudioToolbox.framework */,
+				AC5DBBE82774F23700FAA2F1 /* AudioUnit.framework */,
+				AC5DBBE62774F23000FAA2F1 /* CoreAudio.framework */,
+				AC5DBBE12774F07E00FAA2F1 /* liblevels.a */,
+				AC5DBBDF2774EFBD00FAA2F1 /* liblevels.a */,
+				AC5DBBDC2774EEB900FAA2F1 /* liblevels.a */,
 				AC5DBBD82774ED6C00FAA2F1 /* liblevels.a */,
 			);
 			name = Frameworks;
@@ -434,7 +448,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				LIBRARY_SEARCH_PATHS = "$(SRCROOT)/../rust/target/universal/debug";
+				LIBRARY_SEARCH_PATHS = "$(SRCROOT)/../rust/target/universal/release";
 				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				PRODUCT_BUNDLE_IDENTIFIER = com.anaghsharma.levels;
 				PRODUCT_NAME = "$(TARGET_NAME)";
