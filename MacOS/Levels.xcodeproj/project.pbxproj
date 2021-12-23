@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 50;
+	objectVersion = 52;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -15,7 +15,27 @@
 		A70B624C237B003900A2BA73 /* StatusBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A70B624B237B003900A2BA73 /* StatusBarController.swift */; };
 		A70B6250237B022700A2BA73 /* MainViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A70B624F237B022700A2BA73 /* MainViewController.swift */; };
 		A70B6252237B078200A2BA73 /* EventMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = A70B6251237B078200A2BA73 /* EventMonitor.swift */; };
+		AC2E4559277433BE00B1E878 /* decibel.udl in Resources */ = {isa = PBXBuildFile; fileRef = AC2E4558277433BE00B1E878 /* decibel.udl */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXBuildRule section */
+		AC2E455A2774342400B1E878 /* PBXBuildRule */ = {
+			isa = PBXBuildRule;
+			compilerSpec = com.apple.compilers.proxy.script;
+			filePatterns = "*.udl";
+			fileType = pattern.proxy;
+			inputFiles = (
+				"$(SRCROOT)/../rust/src/decibel.udl",
+			);
+			isEditable = 1;
+			outputFiles = (
+				"$(INPUT_FILE_DIR)/Generated/$(INPUT_FILE_BASE).swift",
+				"$(INPUT_FILE_DIR)/Generated/$(INPUT_FILE_BASE)FFI.h",
+			);
+			runOncePerArchitecture = 0;
+			script = "# Type a script or drag a script file from your workspace to insert its path.\n#INPUT_FILE_PATH=/Users/praveen/code/levels/MacOS/decibel.udl\n#DERIVED_FILE_DIR=/Users/praveen/code/levels/MacOS/derivedx`x``x\n\n$HOME/.cargo/bin/uniffi-bindgen generate \"$INPUT_FILE_PATH\" --language swift --out-dir $INPUT_FILE_DIR/Generated\n";
+		};
+/* End PBXBuildRule section */
 
 /* Begin PBXFileReference section */
 		A70B6230237AF87000A2BA73 /* Levels.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Levels.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -29,6 +49,8 @@
 		A70B624B237B003900A2BA73 /* StatusBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusBarController.swift; sourceTree = "<group>"; };
 		A70B624F237B022700A2BA73 /* MainViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainViewController.swift; sourceTree = "<group>"; };
 		A70B6251237B078200A2BA73 /* EventMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventMonitor.swift; sourceTree = "<group>"; };
+		AC2E4558277433BE00B1E878 /* decibel.udl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = decibel.udl; path = /Users/praveen/code/levels/rust/src/decibel.udl; sourceTree = "<absolute>"; };
+		AC2E455B2774375400B1E878 /* Levels-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Levels-Bridging-Header.h"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -47,6 +69,8 @@
 			children = (
 				A70B6232237AF87000A2BA73 /* Levels */,
 				A70B6231237AF87000A2BA73 /* Products */,
+				AC2E455B2774375400B1E878 /* Levels-Bridging-Header.h */,
+				AC2E4558277433BE00B1E878 /* decibel.udl */,
 			);
 			sourceTree = "<group>";
 		};
@@ -111,6 +135,7 @@
 				A70B622E237AF87000A2BA73 /* Resources */,
 			);
 			buildRules = (
+				AC2E455A2774342400B1E878 /* PBXBuildRule */,
 			);
 			dependencies = (
 			);
@@ -131,6 +156,7 @@
 				TargetAttributes = {
 					A70B622F237AF87000A2BA73 = {
 						CreatedOnToolsVersion = 11.1;
+						LastSwiftMigration = 1320;
 					};
 				};
 			};
@@ -159,6 +185,7 @@
 			files = (
 				A70B623E237AF87700A2BA73 /* Main.storyboard in Resources */,
 				A70B623B237AF87700A2BA73 /* Preview Assets.xcassets in Resources */,
+				AC2E4559277433BE00B1E878 /* decibel.udl in Resources */,
 				A70B6238237AF87700A2BA73 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -311,6 +338,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Levels/Levels.entitlements;
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
@@ -324,9 +352,14 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				LIBRARY_SEARCH_PATHS = "";
 				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				PRODUCT_BUNDLE_IDENTIFIER = com.anaghsharma.levels;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_INCLUDE_PATHS = "";
+				SWIFT_OBJC_BRIDGING_HEADER = "Levels-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_PRECOMPILE_BRIDGING_HEADER = YES;
 				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
@@ -335,6 +368,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Levels/Levels.entitlements;
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
@@ -348,9 +382,13 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				LIBRARY_SEARCH_PATHS = "";
 				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				PRODUCT_BUNDLE_IDENTIFIER = com.anaghsharma.levels;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_INCLUDE_PATHS = "";
+				SWIFT_OBJC_BRIDGING_HEADER = "Levels-Bridging-Header.h";
+				SWIFT_PRECOMPILE_BRIDGING_HEADER = YES;
 				SWIFT_VERSION = 5.0;
 			};
 			name = Release;

@@ -1,8 +1,17 @@
 [package]
-crate-type = ["cdylib"]
 edition = "2021"
 name = "levels"
 version = "0.1.0"
+
+[lib]
+crate-type = ["staticlib", "cdylib", "lib"]
+
+[[bin]]
+name = "levels"
+
+[bindings.swift]
+cdylib_name = "levels"
+omit_argument_labels = true
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -27,6 +36,7 @@ thiserror = "1.0"
 
 # ffi
 uniffi = "0.16"
+uniffi_macros = "0.16"
 
 [build-dependencies]
 uniffi_build = "0.16"
