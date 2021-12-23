@@ -1,3 +1,5 @@
+uniffi_macros::include_scaffolding!("levels");
+
 mod amp;
 mod handler;
 mod util;
@@ -77,3 +79,5 @@ impl App {
         self.state = State::Ready(handler);
     }
 }
+
+include!(concat!(env!("OUT_DIR"), "/levels.uniffi.rs"));
