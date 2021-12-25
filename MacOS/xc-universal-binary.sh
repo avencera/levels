@@ -45,7 +45,7 @@ for i in "${!LIBS_ARCHS[@]}"; do
     "${HOME}"/.cargo/bin/cargo build --locked -p "${FFI_TARGET}" --lib ${RELFLAG} --target "${IOS_TRIPLES[${i}]}" --manifest-path "${SRC_ROOT}"/Cargo.toml
 done
 
-UNIVERSAL_BINARY=${TARGETDIR}/universal/${RELDIR}/${STATIC_LIB_NAME}
+UNIVERSAL_BINARY=${TARGETDIR}/universal/${STATIC_LIB_NAME}
 NEED_LIPO=
 
 # if the universal binary doesnt exist, or if it's older than the static libs,
