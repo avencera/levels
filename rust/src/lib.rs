@@ -19,6 +19,28 @@ enum State {
     Running(Stream),
 }
 
+pub trait OnCallAnswered {
+    fn hello(&self) -> String;
+    fn busy(&self);
+    fn text_received(&self, text: String);
+}
+
+#[derive(Debug, Clone)]
+struct Telephone;
+impl Telephone {
+    fn new() -> Self {
+        Telephone
+    }
+    fn call(&self, domestic: bool, call_responder: Box<dyn OnCallAnswered>) {
+        if domestic {
+            let _ = call_responder.hello();
+        } else {
+            call_responder.busy();
+            call_responder.text_received("Not now, I'm on another call!".into());
+        }
+    }
+}
+
 pub struct App {
     host: Host,
     state: State,
@@ -77,3 +99,5 @@ impl App {
         self.state = State::Ready(handler);
     }
 }
+
+include!(concat!(env!("OUT_DIR"), "/decibel.uniffi.rs"));

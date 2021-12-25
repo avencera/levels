@@ -9,10 +9,11 @@
 import Cocoa
 import SwiftUI
 
-@NSApplicationMain
+@main
 class AppDelegate: NSObject, NSApplicationDelegate {
     var popover = NSPopover.init()
     var statusBar: StatusBarController?
+    var telephone = Telephone()
 
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         // Create the SwiftUI view that provides the contents
@@ -25,6 +26,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         
         // Create the Status Bar Item with the Popover
         statusBar = StatusBarController.init(popover)
+        statusBar?.changeText(text: "h2")
     }
 
     func applicationWillTerminate(_ aNotification: Notification) {

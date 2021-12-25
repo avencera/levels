@@ -1,0 +1,9 @@
+[bindings.kotlin]
+cdylib_name = "levels"
+package_name = "uniffi.levels"
+
+[bindings.swift]
+cdylib_name = "levels"
+
+[bindings.python]
+cdylib_name = "levels"

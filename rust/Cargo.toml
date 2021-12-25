@@ -3,6 +3,12 @@ edition = "2021"
 name = "levels"
 version = "0.1.0"
 
+[lib]
+crate-type = ["staticlib", "cdylib", "lib"]
+
+[[bin]]
+name = "levels"
+
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
@@ -23,3 +29,10 @@ log = "0.4"
 color-eyre = "0.5"
 eyre = "0.6"
 thiserror = "1.0"
+
+# ffi
+uniffi = "0.16"
+uniffi_macros = "0.16"
+
+[build-dependencies]
+uniffi_build = "0.16"
