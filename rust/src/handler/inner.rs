@@ -22,7 +22,7 @@ pub struct InnerHandler<T> {
 impl<T> InnerHandler<T>
 where
     Amp<T>: Decibel,
-    T: Copy + Default + cpal::Sample + PartialOrd + Send + 'static,
+    T: Copy + Default + cpal::Sample + PartialOrd + Send + 'static + Sync,
 {
     pub fn new(device: Device, config: SupportedStreamConfig) -> Self {
         let sample_rate = config.sample_rate().0;
