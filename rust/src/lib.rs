@@ -3,7 +3,7 @@ mod app;
 pub mod handler;
 mod util;
 
-use std::sync::Mutex;
+use std::sync::RwLock;
 
 pub type App = app::App;
 
@@ -37,13 +37,13 @@ pub trait DecibelResponder {
 }
 
 pub struct AppInterface {
-    app: Mutex<App>,
+    app: RwLock<App>,
 }
 
 impl AppInterface {
     fn new() -> Self {
         Self {
-            app: Mutex::new(App::new()),
+            app: RwLock::new(App::new()),
         }
     }
 
@@ -53,7 +53,7 @@ impl AppInterface {
     // }
 
     fn run(&self) {
-        let mut app = self.app.lock().unwrap();
+        let mut app = self.app.write().unwrap();
         (*app).run().unwrap();
     }
 }
