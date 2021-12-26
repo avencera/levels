@@ -7,5 +7,5 @@ interface Levels {
 };
 
 callback interface DecibelResponder {
-  void decibel(i32 text);
+  void decibel(i32 decibel);
 };

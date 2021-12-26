@@ -19,13 +19,13 @@ fileprivate extension RustBuffer {
     }
 
     static func from(_ ptr: UnsafeBufferPointer<UInt8>) -> RustBuffer {
-        try! rustCall { ffi_decibel_e2a2_rustbuffer_from_bytes(ForeignBytes(bufferPointer: ptr), $0) }
+        try! rustCall { ffi_decibel_3085_rustbuffer_from_bytes(ForeignBytes(bufferPointer: ptr), $0) }
     }
 
     // Frees the buffer in place.
     // The buffer must not be used after this is called.
     func deallocate() {
-        try! rustCall { ffi_decibel_e2a2_rustbuffer_free(self, $0) }
+        try! rustCall { ffi_decibel_3085_rustbuffer_free(self, $0) }
     }
 }
 
@@ -473,12 +473,13 @@ fileprivate class FfiConverterCallbackInterface<CallbackInterface> {
 }
 
 
-public protocol TelephoneProtocol {
-    func call( domestic: Bool,  callResponder: OnCallAnswered ) 
+public protocol LevelsProtocol {
+    func run( decibelResponder: DecibelResponder ) 
+    func stop() 
     
 }
 
-public class Telephone: TelephoneProtocol {
+public class Levels: LevelsProtocol {
     fileprivate let pointer: UnsafeMutableRawPointer
 
     // TODO: We'd like this to be `private` but for Swifty reasons,
@@ -493,22 +494,30 @@ public class Telephone: TelephoneProtocol {
     
     rustCall() {
     
-    decibel_e2a2_Telephone_new( $0)
+    decibel_3085_Levels_new( $0)
 })
     }
 
     deinit {
-        try! rustCall { ffi_decibel_e2a2_Telephone_object_free(pointer, $0) }
+        try! rustCall { ffi_decibel_3085_Levels_object_free(pointer, $0) }
     }
 
     
 
     
-    public func call( domestic: Bool,  callResponder: OnCallAnswered )  {
+    public func run( decibelResponder: DecibelResponder )  {
         try!
     rustCall() {
     
-    decibel_e2a2_Telephone_call(self.pointer, domestic.lower(), ffiConverterCallbackInterfaceOnCallAnswered.lower(callResponder) , $0
+    decibel_3085_Levels_run(self.pointer, ffiConverterCallbackInterfaceDecibelResponder.lower(decibelResponder) , $0
+    )
+}
+    }
+    public func stop()  {
+        try!
+    rustCall() {
+    
+    decibel_3085_Levels_stop(self.pointer,  $0
     )
 }
     }
@@ -516,7 +525,7 @@ public class Telephone: TelephoneProtocol {
 }
 
 
-fileprivate extension Telephone {
+fileprivate extension Levels {
     typealias FfiType = UnsafeMutableRawPointer
 
     static func read(from buf: Reader) throws -> Self {
@@ -549,47 +558,25 @@ fileprivate extension Telephone {
 // """
 // 'private' modifier cannot be used with extensions that declare protocol conformances
 // """
-extension Telephone : ViaFfi, Serializable {}
+extension Levels : ViaFfi, Serializable {}
 
 
-// Declaration and FfiConverters for OnCallAnswered Callback Interface
+// Declaration and FfiConverters for DecibelResponder Callback Interface
 
-public protocol OnCallAnswered : AnyObject {
-    func hello()  -> String
-    func busy() 
-    func textReceived( text: String ) 
+public protocol DecibelResponder : AnyObject {
+    func decibel( decibel: Int32 ) 
     
 }
 
 // The ForeignCallback that is passed to Rust.
-fileprivate let foreignCallbackCallbackInterfaceOnCallAnswered : ForeignCallback =
+fileprivate let foreignCallbackCallbackInterfaceDecibelResponder : ForeignCallback =
     { (handle: Handle, method: Int32, args: RustBuffer, out_buf: UnsafeMutablePointer<RustBuffer>) -> Int32 in
-        func invokeHello(_ swiftCallbackInterface: OnCallAnswered, _ args: RustBuffer) throws -> RustBuffer {
-        defer { args.deallocate() }
-            
-            let result =  swiftCallbackInterface.hello()
-            let writer = Writer()
-                result.write(into: writer)
-                return RustBuffer(bytes: writer.bytes)
-                // TODO catch errors and report them back to Rust.
-                // https://github.com/mozilla/uniffi-rs/issues/351
-
-    }
-    func invokeBusy(_ swiftCallbackInterface: OnCallAnswered, _ args: RustBuffer) throws -> RustBuffer {
-        defer { args.deallocate() }
-            
-              swiftCallbackInterface.busy()
-            return RustBuffer()
-                // TODO catch errors and report them back to Rust.
-                // https://github.com/mozilla/uniffi-rs/issues/351
-
-    }
-    func invokeTextReceived(_ swiftCallbackInterface: OnCallAnswered, _ args: RustBuffer) throws -> RustBuffer {
+        func invokeDecibel(_ swiftCallbackInterface: DecibelResponder, _ args: RustBuffer) throws -> RustBuffer {
         defer { args.deallocate() }
 
             let reader = Reader(data: Data(rustBuffer: args))
-              swiftCallbackInterface.textReceived(
-                    text: try String.read(from: reader) 
+              swiftCallbackInterface.decibel(
+                    decibel: try Int32.read(from: reader) 
                     )
             return RustBuffer()
                 // TODO catch errors and report them back to Rust.
@@ -598,27 +585,15 @@ fileprivate let foreignCallbackCallbackInterfaceOnCallAnswered : ForeignCallback
     }
     
 
-        let cb = try! ffiConverterCallbackInterfaceOnCallAnswered.lift(handle)
+        let cb = try! ffiConverterCallbackInterfaceDecibelResponder.lift(handle)
         switch method {
             case IDX_CALLBACK_FREE:
-                ffiConverterCallbackInterfaceOnCallAnswered.drop(handle: handle)
+                ffiConverterCallbackInterfaceDecibelResponder.drop(handle: handle)
                 // No return value.
                 // See docs of ForeignCallback in `uniffi/src/ffi/foreigncallbacks.rs`
                 return 0
             case 1:
-                let buffer = try! invokeHello(cb, args)
-                out_buf.pointee = buffer
-                // Value written to out buffer.
-                // See docs of ForeignCallback in `uniffi/src/ffi/foreigncallbacks.rs`
-                return 1
-            case 2:
-                let buffer = try! invokeBusy(cb, args)
-                out_buf.pointee = buffer
-                // Value written to out buffer.
-                // See docs of ForeignCallback in `uniffi/src/ffi/foreigncallbacks.rs`
-                return 1
-            case 3:
-                let buffer = try! invokeTextReceived(cb, args)
+                let buffer = try! invokeDecibel(cb, args)
                 out_buf.pointee = buffer
                 // Value written to out buffer.
                 // See docs of ForeignCallback in `uniffi/src/ffi/foreigncallbacks.rs`
@@ -635,29 +610,19 @@ fileprivate let foreignCallbackCallbackInterfaceOnCallAnswered : ForeignCallback
     }
 
 // The ffiConverter which transforms the Callbacks in to Handles to pass to Rust.
-private let ffiConverterCallbackInterfaceOnCallAnswered: FfiConverterCallbackInterface<OnCallAnswered> = {
+private let ffiConverterCallbackInterfaceDecibelResponder: FfiConverterCallbackInterface<DecibelResponder> = {
     try! rustCall { (err: UnsafeMutablePointer<RustCallStatus>) in
-            ffi_decibel_e2a2_OnCallAnswered_init_callback(foreignCallbackCallbackInterfaceOnCallAnswered, err)
+            ffi_decibel_3085_DecibelResponder_init_callback(foreignCallbackCallbackInterfaceDecibelResponder, err)
     }
-    return FfiConverterCallbackInterface<OnCallAnswered>()
+    return FfiConverterCallbackInterface<DecibelResponder>()
 }()
-extension Bool: ViaFfi {
-    fileprivate typealias FfiType = Int8
-
+extension Int32: Primitive, ViaFfi {
     fileprivate static func read(from buf: Reader) throws -> Self {
         return try self.lift(buf.readInt())
     }
 
     fileprivate func write(into buf: Writer) {
         buf.writeInt(self.lower())
-    }
-
-    fileprivate static func lift(_ v: FfiType) throws -> Self {
-        return v != 0
-    }
-
-    fileprivate func lower() -> FfiType {
-        return self ? 1 : 0
     }
 }
 extension String: ViaFfi {
@@ -696,7 +661,7 @@ extension String: ViaFfi {
         buf.writeBytes(self.utf8)
     }
 }
-// Helper code for Telephone class is found in ObjectTemplate.swift
+// Helper code for Levels class is found in ObjectTemplate.swift
 
 
 /**
