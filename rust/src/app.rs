@@ -1,4 +1,4 @@
-use crate::handler::Handler;
+use crate::{handler::Handler, DecibelResponder};
 
 use cpal::{
     traits::{DeviceTrait, HostTrait, StreamTrait},
@@ -42,18 +42,18 @@ impl App {
         self.state = State::Stopped;
     }
 
-    pub fn run(&mut self) -> Result<()> {
+    pub fn run(&mut self, responder: Box<dyn DecibelResponder>) -> Result<()> {
         let mut state = State::Init;
         std::mem::swap(&mut self.state, &mut state);
 
         match state {
             State::Init | State::Stopped => {
                 self.state = self.init_handler();
-                self.run()?;
+                self.run(responder)?;
                 Ok(())
             }
             State::Ready(handler) => {
-                let stream = handler.run()?;
+                let stream = handler.run(responder)?;
                 self.state = State::Running(stream);
                 Ok(())
             }

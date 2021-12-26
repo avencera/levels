@@ -8,7 +8,7 @@ use rtrb::{Consumer, Producer, RingBuffer};
 
 use crate::{
     amp::{Amp, Decibel},
-    util, INTERVAL, LATENCY,
+    util, DecibelResponder, INTERVAL, LATENCY,
 };
 
 pub struct InnerHandler<T> {
@@ -21,7 +21,7 @@ pub struct InnerHandler<T> {
 
 impl<T> InnerHandler<T>
 where
-    Amp<T>: Decibel,
+    Amp<T>: Decibel + Send + Sync + 'static,
     T: Copy + Default + cpal::Sample + PartialOrd + Send + 'static + Sync,
 {
     pub fn new(device: Device, config: SupportedStreamConfig) -> Self {
@@ -47,13 +47,14 @@ where
         }
     }
 
-    pub fn run(self) -> Result<Stream> {
+    pub fn run(self, responder: Box<dyn DecibelResponder>) -> Result<Stream> {
         let (sender, receiver): (Sender<Amp<T>>, Receiver<Amp<T>>) =
             crossbeam_channel::bounded(200);
 
         std::thread::spawn(move || {
             for amp in receiver {
-                println!("{}", amp.db());
+                let rounded: i32 = amp.db().round() as i32;
+                responder.decibel(rounded);
             }
         });
 

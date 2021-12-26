@@ -3,62 +3,56 @@ mod app;
 pub mod handler;
 mod util;
 
-use std::sync::RwLock;
+use crossbeam_channel::Sender;
 
 pub type App = app::App;
 
 const INTERVAL: u16 = 100;
 const LATENCY: u16 = 50;
 
-pub trait OnCallAnswered {
-    fn hello(&self) -> String;
-    fn busy(&self);
-    fn text_received(&self, text: String);
-}
-
-#[derive(Debug, Clone)]
-struct Telephone;
-impl Telephone {
-    fn new() -> Self {
-        Telephone
-    }
-    fn call(&self, domestic: bool, call_responder: Box<dyn OnCallAnswered>) {
-        if domestic {
-            let _ = call_responder.hello();
-        } else {
-            call_responder.busy();
-            call_responder.text_received("Not now, I'm on another call!".into());
-        }
-    }
-}
-
-pub trait DecibelResponder {
+pub trait DecibelResponder: Send {
     fn decibel(&self, decibel: i32);
 }
 
-pub struct AppInterface {
-    app: RwLock<App>,
+pub struct Levels {
+    actor: Sender<Msg>,
 }
 
-impl AppInterface {
+enum Msg {
+    Start(Box<dyn DecibelResponder>),
+    Stop,
+}
+
+impl Levels {
     fn new() -> Self {
-        Self {
-            app: RwLock::new(App::new()),
-        }
+        let (sender, receiver) = crossbeam_channel::bounded(200);
+
+        std::thread::spawn(move || {
+            let mut app = app::App::new();
+
+            for msg in receiver {
+                match msg {
+                    Msg::Start(responder) => app.run(responder).unwrap(),
+                    Msg::Stop => {
+                        app.stop();
+                    }
+                }
+            }
+        });
+
+        Self { actor: sender }
     }
 
-    // fn stop(&self) {
-    //     let mut app = self.app.write().unwrap();
-    //     *app.stop();
-    // }
+    fn stop(&self) {
+        self.actor.send(Msg::Stop).unwrap();
+    }
 
-    fn run(&self) {
-        let mut app = self.app.write().unwrap();
-        (*app).run().unwrap();
+    fn run(&self, responder: Box<dyn DecibelResponder>) {
+        self.actor.send(Msg::Start(responder)).unwrap();
     }
 }
 
-impl Default for AppInterface {
+impl Default for Levels {
     fn default() -> Self {
         Self::new()
     }

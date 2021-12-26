@@ -3,6 +3,8 @@ mod inner;
 use cpal::{Device, Stream, SupportedStreamConfig};
 use eyre::Result;
 
+use crate::DecibelResponder;
+
 use self::inner::InnerHandler;
 
 pub enum Handler {
@@ -20,11 +22,11 @@ impl Handler {
         }
     }
 
-    pub fn run(self) -> Result<Stream> {
+    pub fn run(self, responder: Box<dyn DecibelResponder>) -> Result<Stream> {
         match self {
-            Handler::F32(handler) => Ok(handler.run()?),
-            Handler::I16(handler) => Ok(handler.run()?),
-            Handler::U16(handler) => Ok(handler.run()?),
+            Handler::F32(handler) => Ok(handler.run(responder)?),
+            Handler::I16(handler) => Ok(handler.run(responder)?),
+            Handler::U16(handler) => Ok(handler.run(responder)?),
         }
     }
 }
