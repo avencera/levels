@@ -46,35 +46,39 @@ typedef struct RustCallStatus {
 // ⚠️ increment the version suffix in all instances of UNIFFI_SHARED_HEADER_V4 in this file.           ⚠️
 #endif // def UNIFFI_SHARED_H
 
-void ffi_decibel_e2a2_Telephone_object_free(
+void ffi_decibel_3085_Levels_object_free(
       void*_Nonnull ptr,
     RustCallStatus *_Nonnull out_status
     );
-void*_Nonnull decibel_e2a2_Telephone_new(
+void*_Nonnull decibel_3085_Levels_new(
       
     RustCallStatus *_Nonnull out_status
     );
-void decibel_e2a2_Telephone_call(
-      void*_Nonnull ptr,int8_t domestic,uint64_t call_responder,
+void decibel_3085_Levels_run(
+      void*_Nonnull ptr,uint64_t decibel_responder,
     RustCallStatus *_Nonnull out_status
     );
-void ffi_decibel_e2a2_OnCallAnswered_init_callback(
+void decibel_3085_Levels_stop(
+      void*_Nonnull ptr,
+    RustCallStatus *_Nonnull out_status
+    );
+void ffi_decibel_3085_DecibelResponder_init_callback(
       ForeignCallback  _Nonnull callback_stub,
     RustCallStatus *_Nonnull out_status
     );
-RustBuffer ffi_decibel_e2a2_rustbuffer_alloc(
+RustBuffer ffi_decibel_3085_rustbuffer_alloc(
       int32_t size,
     RustCallStatus *_Nonnull out_status
     );
-RustBuffer ffi_decibel_e2a2_rustbuffer_from_bytes(
+RustBuffer ffi_decibel_3085_rustbuffer_from_bytes(
       ForeignBytes bytes,
     RustCallStatus *_Nonnull out_status
     );
-void ffi_decibel_e2a2_rustbuffer_free(
+void ffi_decibel_3085_rustbuffer_free(
       RustBuffer buf,
     RustCallStatus *_Nonnull out_status
     );
-RustBuffer ffi_decibel_e2a2_rustbuffer_reserve(
+RustBuffer ffi_decibel_3085_rustbuffer_reserve(
       RustBuffer buf,int32_t additional,
     RustCallStatus *_Nonnull out_status
     );

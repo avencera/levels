@@ -1,9 +1,11 @@
+use std::fmt::Debug;
+
 use rtrb::CopyToUninit;
 use rtrb::Producer;
 
 pub fn push_partial_slice<T>(queue: &mut Producer<T>, slice: &[T]) -> usize
 where
-    T: Copy,
+    T: Copy + Debug,
 {
     use rtrb::chunks::ChunkError::TooFewSlots;
 

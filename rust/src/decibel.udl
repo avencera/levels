@@ -1,12 +1,11 @@
 namespace decibel{};
 
-interface Telephone {
+interface Levels {
   constructor();
-  void call(boolean domestic, OnCallAnswered call_responder);
+  void run(DecibelResponder decibel_responder);
+  void stop();
 };
 
-callback interface OnCallAnswered {
-  string hello();
-  void busy();
-  void text_received(string text);
+callback interface DecibelResponder {
+  void decibel(i32 decibel);
 };

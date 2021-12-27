@@ -6,7 +6,7 @@ pub struct Amp<T> {
 
 impl<T> Amp<T>
 where
-    T: Copy + Default + PartialOrd,
+    T: Copy + Default + PartialOrd + std::fmt::Display,
 {
     pub fn new_from_iter(iter: impl Iterator<Item = T>) -> Self {
         let mut min = T::default();
@@ -31,6 +31,9 @@ pub trait Decibel {
     fn amp(&self) -> f32;
     fn db(&self) -> f32 {
         self.amp().log10() * 20.0
+    }
+    fn rounded(&self) -> i32 {
+        self.db().round() as i32
     }
 }
 
