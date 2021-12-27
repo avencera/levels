@@ -26,7 +26,6 @@ enum Msg {
 impl Levels {
     pub fn new() -> Self {
         let (sender, receiver) = crossbeam_channel::bounded(200);
-        println!("LEVELS NEW");
 
         std::thread::spawn(move || {
             let mut app = app::App::new();
@@ -49,7 +48,6 @@ impl Levels {
     }
 
     pub fn run(&self, responder: Box<dyn DecibelResponder>) {
-        println!("LEVELS START");
         self.actor.send(Msg::Start(responder)).unwrap();
     }
 }

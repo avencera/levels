@@ -1,3 +1,5 @@
+use std::fmt::{Debug, Display};
+
 use cpal::{
     traits::{DeviceTrait, StreamTrait},
     Device, InputCallbackInfo, Stream, SupportedStreamConfig,
@@ -22,7 +24,7 @@ pub struct InnerHandler<T> {
 impl<T> InnerHandler<T>
 where
     Amp<T>: Decibel + Send + Sync + 'static,
-    T: Copy + Default + cpal::Sample + PartialOrd + Send + 'static + Sync,
+    T: Copy + Default + cpal::Sample + PartialOrd + Send + 'static + Sync + Display + Debug,
 {
     pub fn new(device: Device, config: SupportedStreamConfig) -> Self {
         let sample_rate = config.sample_rate().0;
@@ -49,12 +51,11 @@ where
 
     pub fn run(self, responder: Box<dyn DecibelResponder>) -> Result<Stream> {
         let (sender, receiver): (Sender<Amp<T>>, Receiver<Amp<T>>) =
-            crossbeam_channel::bounded(200);
+            crossbeam_channel::bounded(1000);
 
         std::thread::spawn(move || {
             for amp in receiver {
-                let rounded: i32 = amp.db().round() as i32;
-                responder.decibel(rounded);
+                responder.decibel(amp.rounded());
             }
         });
 

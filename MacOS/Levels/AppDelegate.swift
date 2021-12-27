@@ -8,6 +8,7 @@
 
 import Cocoa
 import SwiftUI
+import AVFoundation
 
 class DecibelResponderImpl: DecibelResponder {
     var statusBar: StatusBarController?
@@ -17,22 +18,22 @@ class DecibelResponderImpl: DecibelResponder {
     }
 
     func decibel(decibel: Int32) {
-        statusBar?.changeText(text: String(decibel))
+        DispatchQueue.main.async {
+            self.statusBar?.changeText(text: String(decibel))
+        }
     }
 }
 
 @main
 class AppDelegate: NSObject, NSApplicationDelegate {
+
     var popover = NSPopover.init()
     var statusBar: StatusBarController?
-    var levels: Levels?
-
+    let levels = Levels()
 
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         // Create the SwiftUI view that provides the contents
         let contentView = ContentView()
-        
-        levels = Levels()
 
         // Set the SwiftUI's ContentView to the Popover's ContentViewController
         popover.contentViewController = MainViewController()
@@ -48,7 +49,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         statusBar?.changeText(text: "h2")
         
         cbObject.setStatusBar(sb: statusBar)
-        levels?.run(decibelResponder: cbObject)
+        levels.run(decibelResponder: cbObject)
 
     }
 
