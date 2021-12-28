@@ -11,15 +11,15 @@ import SwiftUI
 import AVFoundation
 
 class DecibelResponderImpl: DecibelResponder {
-    var statusBar: StatusBarController?
+    let statusBar: StatusBarController
     
-    func setStatusBar(sb: StatusBarController?) {
-        statusBar = sb
+    init(statusBar: StatusBarController) {
+        self.statusBar = statusBar
     }
-
+    
     func decibel(decibel: Int32) {
         DispatchQueue.main.async {
-            self.statusBar?.changeText(text: String(decibel))
+            self.statusBar.changeText(text: String(decibel))
         }
     }
 }
@@ -41,16 +41,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         popover.contentViewController?.view = NSHostingView(rootView: contentView)
         
         
-        let cbObject = DecibelResponderImpl()
-        
-        
         // Create the Status Bar Item with the Popover
         statusBar = StatusBarController.init(popover)
-        statusBar?.changeText(text: "h2")
         
-        cbObject.setStatusBar(sb: statusBar)
-        levels.run(decibelResponder: cbObject)
-
+        if let statusBar = statusBar {
+            statusBar.changeText(text: "ready")
+            
+            let decibelResponder = DecibelResponderImpl(statusBar: statusBar)
+            levels.run(decibelResponder: decibelResponder)
+        }
     }
 
     func applicationWillTerminate(_ aNotification: Notification) {
