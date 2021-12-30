@@ -19,13 +19,13 @@ fileprivate extension RustBuffer {
     }
 
     static func from(_ ptr: UnsafeBufferPointer<UInt8>) -> RustBuffer {
-        try! rustCall { ffi_decibel_3085_rustbuffer_from_bytes(ForeignBytes(bufferPointer: ptr), $0) }
+        try! rustCall { ffi_decibel_c9ff_rustbuffer_from_bytes(ForeignBytes(bufferPointer: ptr), $0) }
     }
 
     // Frees the buffer in place.
     // The buffer must not be used after this is called.
     func deallocate() {
-        try! rustCall { ffi_decibel_3085_rustbuffer_free(self, $0) }
+        try! rustCall { ffi_decibel_c9ff_rustbuffer_free(self, $0) }
     }
 }
 
@@ -472,6 +472,63 @@ fileprivate class FfiConverterCallbackInterface<CallbackInterface> {
     }
 }
 
+// Note that we don't yet support `indirect` for enums.
+// See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
+
+public enum Color {
+    
+    case red
+    case green
+    case yellow
+    case blue
+    case skyBlue
+}
+
+extension Color: ViaFfiUsingByteBuffer, ViaFfi {
+    fileprivate static func read(from buf: Reader) throws -> Color {
+        let variant: Int32 = try buf.readInt()
+        switch variant {
+        
+        case 1: return .red
+        case 2: return .green
+        case 3: return .yellow
+        case 4: return .blue
+        case 5: return .skyBlue
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    fileprivate func write(into buf: Writer) {
+        switch self {
+        
+        
+        case .red:
+            buf.writeInt(Int32(1))
+        
+        
+        case .green:
+            buf.writeInt(Int32(2))
+        
+        
+        case .yellow:
+            buf.writeInt(Int32(3))
+        
+        
+        case .blue:
+            buf.writeInt(Int32(4))
+        
+        
+        case .skyBlue:
+            buf.writeInt(Int32(5))
+        
+        }
+    }
+}
+
+
+extension Color: Equatable, Hashable {}
+
+
 
 public protocol LevelsProtocol {
     func run( decibelResponder: DecibelResponder ) 
@@ -494,12 +551,12 @@ public class Levels: LevelsProtocol {
     
     rustCall() {
     
-    decibel_3085_Levels_new( $0)
+    decibel_c9ff_Levels_new( $0)
 })
     }
 
     deinit {
-        try! rustCall { ffi_decibel_3085_Levels_object_free(pointer, $0) }
+        try! rustCall { ffi_decibel_c9ff_Levels_object_free(pointer, $0) }
     }
 
     
@@ -509,7 +566,7 @@ public class Levels: LevelsProtocol {
         try!
     rustCall() {
     
-    decibel_3085_Levels_run(self.pointer, ffiConverterCallbackInterfaceDecibelResponder.lower(decibelResponder) , $0
+    decibel_c9ff_Levels_run(self.pointer, ffiConverterCallbackInterfaceDecibelResponder.lower(decibelResponder) , $0
     )
 }
     }
@@ -517,7 +574,7 @@ public class Levels: LevelsProtocol {
         try!
     rustCall() {
     
-    decibel_3085_Levels_stop(self.pointer,  $0
+    decibel_c9ff_Levels_stop(self.pointer,  $0
     )
 }
     }
@@ -564,7 +621,7 @@ extension Levels : ViaFfi, Serializable {}
 // Declaration and FfiConverters for DecibelResponder Callback Interface
 
 public protocol DecibelResponder : AnyObject {
-    func decibel( decibel: Int32 ) 
+    func decibel( decibel: Int32,  color: Color ) 
     
 }
 
@@ -576,7 +633,8 @@ fileprivate let foreignCallbackCallbackInterfaceDecibelResponder : ForeignCallba
 
             let reader = Reader(data: Data(rustBuffer: args))
               swiftCallbackInterface.decibel(
-                    decibel: try Int32.read(from: reader) 
+                    decibel: try Int32.read(from: reader), 
+                    color: try Color.read(from: reader) 
                     )
             return RustBuffer()
                 // TODO catch errors and report them back to Rust.
@@ -612,7 +670,7 @@ fileprivate let foreignCallbackCallbackInterfaceDecibelResponder : ForeignCallba
 // The ffiConverter which transforms the Callbacks in to Handles to pass to Rust.
 private let ffiConverterCallbackInterfaceDecibelResponder: FfiConverterCallbackInterface<DecibelResponder> = {
     try! rustCall { (err: UnsafeMutablePointer<RustCallStatus>) in
-            ffi_decibel_3085_DecibelResponder_init_callback(foreignCallbackCallbackInterfaceDecibelResponder, err)
+            ffi_decibel_c9ff_DecibelResponder_init_callback(foreignCallbackCallbackInterfaceDecibelResponder, err)
     }
     return FfiConverterCallbackInterface<DecibelResponder>()
 }()
@@ -662,6 +720,7 @@ extension String: ViaFfi {
     }
 }
 // Helper code for Levels class is found in ObjectTemplate.swift
+// Helper code for Color enum is found in EnumTemplate.swift
 
 
 /**

@@ -1,9 +1,9 @@
-use levels::{DecibelResponder, Levels};
+use levels::{Color, DecibelResponder, Levels};
 
 struct Responder {}
 
 impl DecibelResponder for Responder {
-    fn decibel(&self, decibel: i32) {
+    fn decibel(&self, decibel: i32, _color: Color) {
         println!("{}", decibel);
     }
 }

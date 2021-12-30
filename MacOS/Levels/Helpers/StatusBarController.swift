@@ -21,6 +21,9 @@ class StatusBarController {
         statusItem = statusBar.statusItem(withLength: 28.0)
         
         if let statusBarButton = statusItem.button {
+            statusBarButton.bezelStyle = .texturedSquare
+            statusBarButton.isBordered = false
+            statusBarButton.wantsLayer = true
             statusBarButton.title = ""
             statusBarButton.action = #selector(togglePopover(sender:))
             statusBarButton.target = self
@@ -38,7 +41,24 @@ class StatusBarController {
         }
     }
     
-    public func changeText(text: String) {
+    public func changeText(text: String, color: Color) {
+        let color: CGColor = {
+            switch color {
+            case Color.red:
+                return NSColor.red.cgColor
+            case Color.blue:
+                return NSColor.blue.cgColor
+            case Color.green:
+                return NSColor.green.cgColor
+            case Color.yellow:
+                return NSColor.systemYellow.cgColor
+            case Color.skyBlue:
+                return NSColor.init(displayP3Red: 0.502, green: 0.855, blue: 235, alpha: 0.922).cgColor
+            }
+        }()
+        
+        
+        statusItem.button?.layer?.backgroundColor = color
         statusItem.button?.title = text
     }
     

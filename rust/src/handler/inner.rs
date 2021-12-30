@@ -10,7 +10,7 @@ use rtrb::{Consumer, Producer, RingBuffer};
 
 use crate::{
     amp::{Amp, Decibel},
-    util, DecibelResponder, INTERVAL, LATENCY,
+    util, Color, DecibelResponder, INTERVAL, LATENCY,
 };
 
 pub struct InnerHandler<T> {
@@ -55,7 +55,16 @@ where
 
         std::thread::spawn(move || {
             for amp in receiver {
-                responder.decibel(amp.rounded());
+                let amp = amp.rounded();
+                let color = match amp {
+                    i32::MIN..=-21 => Color::Blue,
+                    -20..=-13 => Color::SkyBlue,
+                    -12..=-8 => Color::Green,
+                    -7..=-2 => Color::Yellow,
+                    -1..=i32::MAX => Color::Red,
+                };
+
+                responder.decibel(amp, color);
             }
         });
 

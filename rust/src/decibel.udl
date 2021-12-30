@@ -7,5 +7,13 @@ interface Levels {
 };
 
 callback interface DecibelResponder {
-  void decibel(i32 decibel);
+  void decibel(i32 decibel, Color color);
+};
+
+enum Color {
+  "Red",
+  "Green",
+  "Yellow",
+  "Blue",
+  "SkyBlue"
 };

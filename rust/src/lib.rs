@@ -11,11 +11,19 @@ const INTERVAL: u16 = 100;
 const LATENCY: u16 = 50;
 
 pub trait DecibelResponder: Send {
-    fn decibel(&self, decibel: i32);
+    fn decibel(&self, decibel: i32, color: Color);
 }
 
 pub struct Levels {
     actor: Sender<Msg>,
+}
+
+pub enum Color {
+    Red,
+    Green,
+    Yellow,
+    Blue,
+    SkyBlue,
 }
 
 enum Msg {

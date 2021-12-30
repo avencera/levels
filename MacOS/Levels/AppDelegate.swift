@@ -17,9 +17,9 @@ class DecibelResponderImpl: DecibelResponder {
         self.statusBar = statusBar
     }
     
-    func decibel(decibel: Int32) {
+    func decibel(decibel: Int32, color: Color) {
         DispatchQueue.main.async {
-            self.statusBar.changeText(text: String(decibel))
+            self.statusBar.changeText(text: String(decibel), color: color)
         }
     }
 }
@@ -45,7 +45,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         statusBar = StatusBarController.init(popover)
         
         if let statusBar = statusBar {
-            statusBar.changeText(text: "ready")
+            statusBar.changeText(text: "ready", color: Color.blue)
             
             let decibelResponder = DecibelResponderImpl(statusBar: statusBar)
             levels.run(decibelResponder: decibelResponder)
@@ -53,6 +53,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationWillTerminate(_ aNotification: Notification) {
-        // Insert code here to tear down your application
+        levels.stop()
     }
 }
